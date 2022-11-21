@@ -1,0 +1,12 @@
+apiVersion: linkerd-dynauth.k.r8y.net/v1alpha1
+kind: DynamicServerAuthorization
+metadata:
+  labels:
+    app.kubernetes.io/name: dynamicserverauthorization
+    app.kubernetes.io/instance: dynamicserverauthorization-sample
+    app.kubernetes.io/part-of: linkerd-dynauth
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: linkerd-dynauth
+  name: dynamicserverauthorization-sample
+spec:
+  # TODO(user): Add fields here

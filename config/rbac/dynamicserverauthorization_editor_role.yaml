@@ -1,0 +1,31 @@
+# permissions for end users to edit dynamicserverauthorizations.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: dynamicserverauthorization-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: linkerd-dynauth
+    app.kubernetes.io/part-of: linkerd-dynauth
+    app.kubernetes.io/managed-by: kustomize
+  name: dynamicserverauthorization-editor-role
+rules:
+- apiGroups:
+  - linkerd-dynauth.k.r8y.net
+  resources:
+  - dynamicserverauthorizations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - linkerd-dynauth.k.r8y.net
+  resources:
+  - dynamicserverauthorizations/status
+  verbs:
+  - get

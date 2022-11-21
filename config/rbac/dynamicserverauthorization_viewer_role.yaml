@@ -1,0 +1,27 @@
+# permissions for end users to view dynamicserverauthorizations.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: dynamicserverauthorization-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: linkerd-dynauth
+    app.kubernetes.io/part-of: linkerd-dynauth
+    app.kubernetes.io/managed-by: kustomize
+  name: dynamicserverauthorization-viewer-role
+rules:
+- apiGroups:
+  - linkerd-dynauth.k.r8y.net
+  resources:
+  - dynamicserverauthorizations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - linkerd-dynauth.k.r8y.net
+  resources:
+  - dynamicserverauthorizations/status
+  verbs:
+  - get
