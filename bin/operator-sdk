@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+function detect_arch {
+  case $(uname -m) in
+    x86_64)
+      echo amd64
+      ;;
+    aarch64)
+      echo arm64
+      ;;
+    *)
+      uname -m
+      ;;
+  esac
+}
+
+function detect_os {
+  uname | tr '[:upper:]' '[:lower:]'
+}
+
+version="v1.25.2"
+binary=".cache/operator-sdk-${version}"
+
+if [[ ! -f $binary ]]; then
+  download_url="https://github.com/operator-framework/operator-sdk/releases/download/${version}/operator-sdk_$(detect_os)_$(detect_arch)"
+  mkdir -p .cache
+
+  # TODO(ripta): check gpg signature
+  echo "Downloading ${download_url} into ${binary}" >&2
+  curl -fL -o "${binary}" "${download_url}"
+  chmod +x $binary
+fi
+
+exec $binary "$@"
