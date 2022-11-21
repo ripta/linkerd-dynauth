@@ -1,0 +1,9 @@
+domain: k.r8y.net
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: linkerd-dynauth
+repo: github.com/ripta/linkerd-dynauth
+version: "3"
