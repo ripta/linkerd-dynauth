@@ -51,9 +51,13 @@ spec:
                       to a server.
                     properties:
                       serviceAccounts:
+                        description: ServiceAccounts defines the authorized service
+                          accounts. At most 16 items may be specified in a single
+                          dynamic server authorization.
                         items:
                           properties:
                             name:
+                              description: Name defines the name of the service account.
                               type: string
                             namespaceSelector:
                               description: A label selector is a label query over
@@ -107,6 +111,7 @@ spec:
                               type: object
                               x-kubernetes-map-type: atomic
                           type: object
+                        maxItems: 16
                         type: array
                     type: object
                 type: object

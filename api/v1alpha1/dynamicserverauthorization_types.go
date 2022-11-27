@@ -44,10 +44,15 @@ type Client struct {
 }
 
 type MeshTLS struct {
+	// ServiceAccounts defines the authorized service accounts. At most 16 items
+	// may be specified in a single dynamic server authorization.
+	//
+	//+kubebuilder:validation:MaxItems=16
 	ServiceAccounts []*ServiceAccountSelector `json:"serviceAccounts,omitempty"`
 }
 
 type ServiceAccountSelector struct {
+	// Name defines the name of the service account.
 	Name              string                `json:"name,omitempty"`
 	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty"`
 }
