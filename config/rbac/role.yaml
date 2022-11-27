@@ -1,0 +1,33 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - linkerd-dynauth.k.r8y.net
+  resources:
+  - dynamicserverauthorizations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - linkerd-dynauth.k.r8y.net
+  resources:
+  - dynamicserverauthorizations/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - linkerd-dynauth.k.r8y.net
+  resources:
+  - dynamicserverauthorizations/status
+  verbs:
+  - get
+  - patch
+  - update
