@@ -17,25 +17,32 @@ limitations under the License.
 package v1alpha1
 
 import (
+	serverauthorizationv1beta1 "github.com/linkerd/linkerd2/controller/gen/apis/serverauthorization/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // DynamicServerAuthorizationSpec defines the desired state of DynamicServerAuthorization
 type DynamicServerAuthorizationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Server serverauthorizationv1beta1.Server `json:"server,omitempty"`
+	Client Client                            `json:"client,omitempty"`
+}
 
-	// Foo is an example field of DynamicServerAuthorization. Edit dynamicserverauthorization_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+type Client struct {
+	MeshTLS *MeshTLS `json:"meshTLS,omitempty"`
+}
+
+type MeshTLS struct {
+	ServiceAccounts []*ServiceAccountSelector `json:"serviceAccounts,omitempty"`
+}
+
+type ServiceAccountSelector struct {
+	Name              string                `json:"name,omitempty"`
+	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty"`
 }
 
 // DynamicServerAuthorizationStatus defines the observed state of DynamicServerAuthorization
 type DynamicServerAuthorizationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 }
 
 //+kubebuilder:object:root=true
