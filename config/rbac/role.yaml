@@ -6,6 +6,22 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - linkerd-dynauth.k.r8y.net
   resources:
   - dynamicserverauthorizations
@@ -31,3 +47,15 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - policy.linkerd.io/v1beta1
+  resources:
+  - serverauthorizations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
