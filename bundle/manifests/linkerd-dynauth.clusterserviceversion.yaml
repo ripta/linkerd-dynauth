@@ -1,0 +1,320 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "linkerd-dynauth.k.r8y.net/v1alpha1",
+          "kind": "DynamicServerAuthorization",
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/name": "test"
+            },
+            "name": "test-health"
+          },
+          "spec": {
+            "client": {
+              "healthcheck": true
+            },
+            "commonMetadata": {
+              "labels": {
+                "app.kubernetes.io/name": "test"
+              }
+            },
+            "server": {
+              "name": "test"
+            }
+          }
+        },
+        {
+          "apiVersion": "linkerd-dynauth.k.r8y.net/v1alpha1",
+          "kind": "DynamicServerAuthorization",
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/name": "test"
+            },
+            "name": "test-labels"
+          },
+          "spec": {
+            "client": {
+              "meshTLS": {
+                "serviceAccounts": [
+                  {
+                    "name": "default",
+                    "namespaceSelector": {
+                      "matchExpressions": [
+                        {
+                          "key": "group.k.r8y.net/name",
+                          "operator": "In",
+                          "values": [
+                            "foo",
+                            "bar"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "commonMetadata": {
+              "labels": {
+                "app.kubernetes.io/name": "test"
+              }
+            },
+            "server": {
+              "name": "test"
+            }
+          }
+        }
+      ]
+    capabilities: Basic Install
+    operators.operatorframework.io/builder: operator-sdk-v1.25.2
+    operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
+  name: linkerd-dynauth.v0.0.1
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: DynamicServerAuthorization is the Schema for the dynamicserverauthorizations
+        API
+      displayName: Dynamic Server Authorization
+      kind: DynamicServerAuthorization
+      name: dynamicserverauthorizations.linkerd-dynauth.k.r8y.net
+      version: v1alpha1
+  description: Provide a couple ways to dynamically authorize linkerd servers.
+  displayName: linkerd Dynamic Authorizer
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - namespaces
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - nodes
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - linkerd-dynauth.k.r8y.net
+          resources:
+          - dynamicserverauthorizations
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - linkerd-dynauth.k.r8y.net
+          resources:
+          - dynamicserverauthorizations/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - linkerd-dynauth.k.r8y.net
+          resources:
+          - dynamicserverauthorizations/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - policy.linkerd.io/v1beta1
+          resources:
+          - serverauthorizations
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - authentication.k8s.io
+          resources:
+          - tokenreviews
+          verbs:
+          - create
+        - apiGroups:
+          - authorization.k8s.io
+          resources:
+          - subjectaccessreviews
+          verbs:
+          - create
+        serviceAccountName: linkerd-dynauth-controller-manager
+      deployments:
+      - label:
+          app.kubernetes.io/component: manager
+          app.kubernetes.io/created-by: linkerd-dynauth
+          app.kubernetes.io/instance: controller-manager
+          app.kubernetes.io/managed-by: kustomize
+          app.kubernetes.io/name: deployment
+          app.kubernetes.io/part-of: linkerd-dynauth
+          control-plane: controller-manager
+        name: linkerd-dynauth-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              control-plane: controller-manager
+          strategy: {}
+          template:
+            metadata:
+              annotations:
+                kubectl.kubernetes.io/default-container: manager
+              labels:
+                control-plane: controller-manager
+            spec:
+              affinity:
+                nodeAffinity:
+                  requiredDuringSchedulingIgnoredDuringExecution:
+                    nodeSelectorTerms:
+                    - matchExpressions:
+                      - key: kubernetes.io/arch
+                        operator: In
+                        values:
+                        - amd64
+                        - arm64
+                        - ppc64le
+                        - s390x
+                      - key: kubernetes.io/os
+                        operator: In
+                        values:
+                        - linux
+              containers:
+              - args:
+                - --secure-listen-address=0.0.0.0:8443
+                - --upstream=http://127.0.0.1:8080/
+                - --logtostderr=true
+                - --v=0
+                image: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.0
+                name: kube-rbac-proxy
+                ports:
+                - containerPort: 8443
+                  name: https
+                  protocol: TCP
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 128Mi
+                  requests:
+                    cpu: 5m
+                    memory: 64Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                    - ALL
+              - args:
+                - --health-probe-bind-address=:8081
+                - --metrics-bind-address=127.0.0.1:8080
+                - --leader-elect
+                command:
+                - /manager
+                image: controller:latest
+                livenessProbe:
+                  httpGet:
+                    path: /healthz
+                    port: 8081
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
+                name: manager
+                readinessProbe:
+                  httpGet:
+                    path: /readyz
+                    port: 8081
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 128Mi
+                  requests:
+                    cpu: 10m
+                    memory: 64Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                    - ALL
+              securityContext:
+                runAsNonRoot: true
+              serviceAccountName: linkerd-dynauth-controller-manager
+              terminationGracePeriodSeconds: 10
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        serviceAccountName: linkerd-dynauth-controller-manager
+    strategy: deployment
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - linkerd
+  - dynamic authorization
+  - server authorization
+  links:
+  - name: Linkerd Dynauth
+    url: https://linkerd-dynauth.domain
+  maintainers:
+  - email: ripta@users.noreply.github.com
+    name: Ripta Pasay
+  maturity: alpha
+  provider:
+    name: linkerd-dynauth
+    url: https://github.com/ripta/linkerd-dynauth
+  version: 0.0.1
