@@ -151,6 +151,7 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 		if err := r.Get(ctx, id, found); err != nil {
 			if errors.IsNotFound(err) {
 				// CREATE LSA
+				l.Info("creating server authorization for healthcheck grant", "server_authorization_name", lsa.Name)
 				if err := r.Create(ctx, &lsa, fieldOwner); err != nil {
 					return ctrl.Result{Requeue: true}, err
 				}
@@ -158,17 +159,15 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 				return ctrl.Result{}, err
 			}
 		} else {
-
-		}
-
-		// UPDATE LSA
-		patch := client.MergeFrom(found.DeepCopy())
-		found.Annotations = lsa.Annotations
-		found.Labels = lsa.Labels
-		found.Spec = lsa.Spec
-		l.Info("patching server authorization for healthcheck grant", "request_key", req, "server_authorization_name", found.Name)
-		if err := r.Patch(ctx, found, patch, fieldOwner); err != nil {
-			return ctrl.Result{}, err
+			// UPDATE LSA
+			patch := client.MergeFrom(found.DeepCopy())
+			found.Annotations = lsa.Annotations
+			found.Labels = lsa.Labels
+			found.Spec = lsa.Spec
+			l.Info("patching server authorization for healthcheck grant", "request_key", req, "server_authorization_name", found.Name)
+			if err := r.Patch(ctx, found, patch, fieldOwner); err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 	} else {
 		id := types.NamespacedName{
