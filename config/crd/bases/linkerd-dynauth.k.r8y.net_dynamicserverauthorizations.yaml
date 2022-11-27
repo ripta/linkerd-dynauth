@@ -101,6 +101,17 @@ spec:
                         type: array
                     type: object
                 type: object
+              commonMetadata:
+                properties:
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  labels:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
               server:
                 description: Server is the Server that a ServerAuthorization uses.
                 properties:

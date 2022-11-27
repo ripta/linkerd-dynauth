@@ -23,8 +23,15 @@ import (
 
 // DynamicServerAuthorizationSpec defines the desired state of DynamicServerAuthorization
 type DynamicServerAuthorizationSpec struct {
+	CommonMetadata CommonMeta `json:"commonMetadata,omitempty"`
+
 	Server serverauthorizationv1beta1.Server `json:"server,omitempty"`
 	Client Client                            `json:"client,omitempty"`
+}
+
+type CommonMeta struct {
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 type Client struct {
