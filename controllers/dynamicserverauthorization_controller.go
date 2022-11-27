@@ -32,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -316,6 +317,12 @@ func (r *DynamicServerAuthorizationReconciler) SetupWithManager(mgr ctrl.Manager
 	mgr.GetFieldIndexer().IndexField(
 		ctx,
 		&linkerddynauthv1alpha1.DynamicServerAuthorization{},
+		"spec.client.healthcheck",
+		r.nodeToHealthcheckAuthorizationIndexer,
+	)
+	mgr.GetFieldIndexer().IndexField(
+		ctx,
+		&linkerddynauthv1alpha1.DynamicServerAuthorization{},
 		"spec.client.meshTLS.serviceAccounts.namespaceSelector.labelKey",
 		func(obj client.Object) []string {
 			dsa, ok := obj.(*linkerddynauthv1alpha1.DynamicServerAuthorization)
@@ -357,8 +364,63 @@ func (r *DynamicServerAuthorizationReconciler) SetupWithManager(mgr ctrl.Manager
 			},
 			handler.EnqueueRequestsFromMapFunc(r.namespaceToEnqueueRequestMapper),
 		).
+		Watches(
+			&source.Kind{
+				Type: &corev1.Node{},
+			},
+			handler.EnqueueRequestsFromMapFunc(r.nodeToHealthcheckAuthorizationMapper),
+			builder.WithPredicates(&nodeIPFilter{}),
+		).
 		WithOptions(o).
 		Complete(r)
+}
+
+func (r *DynamicServerAuthorizationReconciler) nodeToHealthcheckAuthorizationIndexer(obj client.Object) []string {
+	dsa, ok := obj.(*linkerddynauthv1alpha1.DynamicServerAuthorization)
+	if !ok {
+		return nil
+	}
+
+	if !dsa.Spec.Client.Healthcheck {
+		return nil
+	}
+
+	return []string{"true"}
+}
+
+func (r *DynamicServerAuthorizationReconciler) nodeToHealthcheckAuthorizationMapper(obj client.Object) []reconcile.Request {
+	ctx := context.TODO()
+
+	if _, ok := obj.(*corev1.Node); !ok {
+		log.Log.Error(fmt.Errorf("unexpected object type %T, when expecting corev1.Node", obj), "in HealthcheckAuthorizer mapper")
+		return nil
+	}
+
+	hca := client.MatchingFields{
+		"spec.client.healthcheck": "true",
+	}
+
+	dsal := &linkerddynauthv1alpha1.DynamicServerAuthorizationList{}
+	if err := r.List(ctx, dsal, hca); err != nil {
+		log.Log.Error(err, "listing DynamicServerAuthorization")
+		return nil
+	}
+
+	reqs := []reconcile.Request{}
+	for _, dsa := range dsal.Items {
+		if !dsa.Spec.Client.Healthcheck {
+			continue
+		}
+
+		reqs = append(reqs, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Namespace: dsa.Namespace,
+				Name:      dsa.Name,
+			},
+		})
+	}
+
+	return reqs
 }
 
 func (r *DynamicServerAuthorizationReconciler) namespaceToEnqueueRequestMapper(obj client.Object) []reconcile.Request {
