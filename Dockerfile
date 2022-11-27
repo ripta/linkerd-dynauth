@@ -12,10 +12,10 @@ COPY go.sum go.sum
 RUN go mod download
 
 # Copy the go source
-COPY main.go main.go
-COPY api/ api/
-COPY controllers/ controllers/
-COPY util/ util/
+COPY . .
+
+# Test
+RUN make test
 
 # Build
 # the GOARCH has not a default value to allow the binary be built according to the host where the command
