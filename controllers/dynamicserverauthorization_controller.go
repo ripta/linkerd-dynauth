@@ -312,6 +312,42 @@ func (r *DynamicServerAuthorizationReconciler) SetupWithManager(mgr ctrl.Manager
 		MaxConcurrentReconciles: 5,
 	}
 
+	ctx := context.TODO()
+	mgr.GetFieldIndexer().IndexField(
+		ctx,
+		&linkerddynauthv1alpha1.DynamicServerAuthorization{},
+		"spec.client.meshTLS.serviceAccounts.namespaceSelector.labelKey",
+		func(obj client.Object) []string {
+			dsa, ok := obj.(*linkerddynauthv1alpha1.DynamicServerAuthorization)
+			if !ok {
+				return nil
+			}
+
+			if dsa.Spec.Client.MeshTLS == nil {
+				return nil
+			}
+
+			values := []string{}
+			for _, sa := range dsa.Spec.Client.MeshTLS.ServiceAccounts {
+				if sa.NamespaceSelector == nil {
+					continue
+				}
+
+				for k := range sa.NamespaceSelector.MatchLabels {
+					values = append(values, k)
+				}
+
+				for _, exp := range sa.NamespaceSelector.MatchExpressions {
+					if exp.Operator == metav1.LabelSelectorOpExists || exp.Operator == metav1.LabelSelectorOpIn {
+						values = append(values, exp.Key)
+					}
+				}
+			}
+
+			return values
+		},
+	)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&linkerddynauthv1alpha1.DynamicServerAuthorization{}).
 		Owns(&serverauthorizationv1beta1.ServerAuthorization{}).
