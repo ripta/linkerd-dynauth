@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	serverauthorizationv1beta1 "github.com/linkerd/linkerd2/controller/gen/apis/serverauthorization/v1beta1"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -43,7 +44,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
+	utilruntime.Must(serverauthorizationv1beta1.AddToScheme(scheme))
 	utilruntime.Must(linkerddynauthv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
