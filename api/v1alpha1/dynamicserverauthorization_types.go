@@ -66,6 +66,8 @@ type DynamicServerAuthorizationStatus struct {
 //+kubebuilder:subresource:status
 
 // DynamicServerAuthorization is the Schema for the dynamicserverauthorizations API
+//
+// +kubebuilder:resource:shortName=dsaz
 type DynamicServerAuthorization struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

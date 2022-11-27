@@ -12,6 +12,8 @@ spec:
     kind: DynamicServerAuthorization
     listKind: DynamicServerAuthorizationList
     plural: dynamicserverauthorizations
+    shortNames:
+    - dsaz
     singular: dynamicserverauthorization
   scope: Namespaced
   versions:
