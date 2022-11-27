@@ -21,6 +21,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"hash/fnv"
+	"net"
+	"sort"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -86,6 +88,106 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 	lsaAnnotations := map[string]string{}
 	for k, v := range dsa.Spec.CommonMetadata.Annotations {
 		lsaAnnotations[k] = v
+	}
+
+	if dsa.Spec.Client.Healthcheck {
+		nodeList := &corev1.NodeList{}
+		if err := r.List(ctx, nodeList); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		cidrs := []*serverauthorizationv1beta1.Cidr{}
+		for _, node := range nodeList.Items {
+			for _, addr := range node.Status.Addresses {
+				if addr.Type != corev1.NodeInternalIP && addr.Type != corev1.NodeExternalIP {
+					continue
+				}
+
+				ip := net.ParseIP(addr.Address)
+				if ip == nil {
+					continue
+				}
+
+				cidrs = append(cidrs, &serverauthorizationv1beta1.Cidr{
+					Cidr: fmt.Sprintf("%s/32", ip.String()),
+				})
+			}
+		}
+
+		sort.Slice(cidrs, func(i, j int) bool {
+			return cidrs[i].Cidr < cidrs[j].Cidr
+		})
+
+		lsa := serverauthorizationv1beta1.ServerAuthorization{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace:   dsa.Namespace,
+				Name:        dsa.Name + "-healthcheck",
+				Labels:      lsaLabels,
+				Annotations: lsaAnnotations,
+			},
+			Spec: serverauthorizationv1beta1.ServerAuthorizationSpec{
+				Server: *dsa.Spec.Server.DeepCopy(),
+				Client: serverauthorizationv1beta1.Client{
+					Networks: cidrs,
+				},
+			},
+		}
+
+		if err := controllerutil.SetControllerReference(dsa, &lsa, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		id := types.NamespacedName{
+			Namespace: lsa.Namespace,
+			Name:      lsa.Name,
+		}
+
+		found := &serverauthorizationv1beta1.ServerAuthorization{}
+		if err := r.Get(ctx, id, found); err != nil {
+			if errors.IsNotFound(err) {
+				// CREATE LSA
+				if err := r.Create(ctx, &lsa, client.FieldOwner("linkerd-dynauth")); err != nil {
+					return ctrl.Result{Requeue: true}, err
+				}
+			} else {
+				return ctrl.Result{}, err
+			}
+		} else {
+
+		}
+
+		// UPDATE LSA
+		patch := client.MergeFrom(found.DeepCopy())
+		found.Annotations = lsa.Annotations
+		found.Labels = lsa.Labels
+		found.Spec = lsa.Spec
+		l.Info("patching server authorization for healthcheck grant", "request_key", req, "server_authorization_name", found.Name)
+		if err := r.Patch(ctx, found, patch, client.FieldOwner("linkerd-dynauth")); err != nil {
+			return ctrl.Result{}, err
+		}
+	} else {
+		id := types.NamespacedName{
+			Namespace: dsa.Namespace,
+			Name:      dsa.Name + "-healthcheck",
+		}
+
+		found := &serverauthorizationv1beta1.ServerAuthorization{}
+		if err := r.Get(ctx, id, found); err != nil {
+			if !errors.IsNotFound(err) {
+				return ctrl.Result{}, err
+			}
+		} else {
+			l.Info("deleting server authorization for healthcheck grant", "request_key", req, "server_authorization_nme", found.Name)
+			if err := r.Delete(ctx, found); err != nil {
+				if !errors.IsNotFound(err) {
+					return ctrl.Result{}, err
+				}
+			}
+		}
+	}
+
+	if dsa.Spec.Client.MeshTLS == nil {
+		return ctrl.Result{}, nil
 	}
 
 	// Calculate the list of linkerd server authorizations that should exist
@@ -169,7 +271,7 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 		found.Annotations = lsa.Annotations
 		found.Labels = lsa.Labels
 		found.Spec = lsa.Spec
-		l.Info("patching server authorization", "request_key", req, "server_authorization_name", found.Name, "server_authorization_spec", found.Spec)
+		l.Info("patching server authorization for service account grant", "request_key", req, "server_authorization_name", found.Name, "server_authorization_spec", found.Spec)
 		if err := r.Patch(ctx, found, patch, client.FieldOwner("linkerd-dynauth")); err != nil {
 			return ctrl.Result{}, err
 		}
