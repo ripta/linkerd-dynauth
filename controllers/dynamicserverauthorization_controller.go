@@ -77,6 +77,17 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 		return ctrl.Result{}, err
 	}
 
+	lsaLabels := map[string]string{}
+	for k, v := range dsa.Spec.CommonMetadata.Labels {
+		lsaLabels[k] = v
+	}
+	lsaLabels[ServerAuthorizationMatchLabelKey] = req.Name
+
+	lsaAnnotations := map[string]string{}
+	for k, v := range dsa.Spec.CommonMetadata.Annotations {
+		lsaAnnotations[k] = v
+	}
+
 	// Calculate the list of linkerd server authorizations that should exist
 	expectedLSA := []serverauthorizationv1beta1.ServerAuthorization{}
 	expectedNames := map[string]struct{}{}
@@ -106,11 +117,10 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 
 		lsa := serverauthorizationv1beta1.ServerAuthorization{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: dsa.Namespace,
-				Name:      dsa.Name + "-" + ComputeHash(dm, nil),
-				Labels: map[string]string{
-					ServerAuthorizationMatchLabelKey: req.Name,
-				},
+				Namespace:   dsa.Namespace,
+				Name:        dsa.Name + "-" + ComputeHash(dm, nil),
+				Labels:      lsaLabels,
+				Annotations: lsaAnnotations,
 			},
 			Spec: serverauthorizationv1beta1.ServerAuthorizationSpec{
 				Server: *dsa.Spec.Server.DeepCopy(),
@@ -151,6 +161,8 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 
 		// UPDATE LSA
 		patch := client.MergeFrom(found.DeepCopy())
+		found.Annotations = lsa.Annotations
+		found.Labels = lsa.Labels
 		found.Spec = lsa.Spec
 		l.Info("patching server authorization", "request_key", req, "server_authorization_name", found.Name, "server_authorization_spec", found.Spec)
 		if err := r.Patch(ctx, found, patch, client.FieldOwner("linkerd-dynauth")); err != nil {
