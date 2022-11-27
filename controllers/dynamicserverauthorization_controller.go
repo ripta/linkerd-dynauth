@@ -115,6 +115,13 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 			})
 		}
 
+		var mtls *serverauthorizationv1beta1.MeshTLS
+		if len(lms) > 0 {
+			mtls = &serverauthorizationv1beta1.MeshTLS{
+				ServiceAccounts: lms,
+			}
+		}
+
 		lsa := serverauthorizationv1beta1.ServerAuthorization{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace:   dsa.Namespace,
@@ -125,9 +132,7 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 			Spec: serverauthorizationv1beta1.ServerAuthorizationSpec{
 				Server: *dsa.Spec.Server.DeepCopy(),
 				Client: serverauthorizationv1beta1.Client{
-					MeshTLS: &serverauthorizationv1beta1.MeshTLS{
-						ServiceAccounts: lms,
-					},
+					MeshTLS: mtls,
 				},
 			},
 		}
