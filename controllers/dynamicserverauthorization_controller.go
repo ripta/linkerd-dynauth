@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"hash/fnv"
 	"net"
@@ -233,7 +232,7 @@ func (r *DynamicServerAuthorizationReconciler) Reconcile(ctx context.Context, re
 		lsa := serverauthorizationv1beta1.ServerAuthorization{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace:   dsa.Namespace,
-				Name:        dsa.Name + "-" + ComputeHash(dm, nil),
+				Name:        dsa.Name + "-" + ComputeHashServiceAccountSelector(dm),
 				Labels:      lsaLabels,
 				Annotations: lsaAnnotations,
 			},
@@ -473,14 +472,8 @@ func (r *DynamicServerAuthorizationReconciler) namespaceToEnqueueRequestMapper(o
 	return reqs
 }
 
-func ComputeHash(selector *linkerddynauthv1alpha1.ServiceAccountSelector, collision *int32) string {
+func ComputeHashServiceAccountSelector(selector *linkerddynauthv1alpha1.ServiceAccountSelector) string {
 	hasher := fnv.New32a()
 	util.DeepHashObject(hasher, *selector)
-	if collision != nil {
-		collisionBytes := make([]byte, 8)
-		binary.LittleEndian.PutUint32(collisionBytes, uint32(*collision))
-		hasher.Write(collisionBytes)
-	}
-
 	return rand.SafeEncodeString(fmt.Sprint(hasher.Sum32()))
 }
