@@ -34,7 +34,12 @@ type CommonMeta struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
+// Client describes ways that clients may be authorized to access a server.
 type Client struct {
+	// Healthcheck authorizes node IP addresses. This is useful for clusters in which
+	// the kubelet IP addresses are not predictable.
+	Healthcheck bool `json:"healthcheck,omitempty"`
+	// MeshTLS is used to dynamically authorize clients to a server.
 	MeshTLS *MeshTLS `json:"meshTLS,omitempty"`
 }
 

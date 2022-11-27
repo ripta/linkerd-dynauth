@@ -38,8 +38,17 @@ spec:
               of DynamicServerAuthorization
             properties:
               client:
+                description: Client describes ways that clients may be authorized
+                  to access a server.
                 properties:
+                  healthcheck:
+                    description: Healthcheck authorizes node IP addresses. This is
+                      useful for clusters in which the kubelet IP addresses are not
+                      predictable.
+                    type: boolean
                   meshTLS:
+                    description: MeshTLS is used to dynamically authorize clients
+                      to a server.
                     properties:
                       serviceAccounts:
                         items:
