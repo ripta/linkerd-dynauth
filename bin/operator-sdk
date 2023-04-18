@@ -18,7 +18,7 @@ function detect_os {
   uname | tr '[:upper:]' '[:lower:]'
 }
 
-version="v1.25.2"
+version="v1.28.0"
 binary=".cache/operator-sdk-${version}"
 
 if [[ ! -f $binary ]]; then
