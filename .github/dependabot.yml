@@ -8,3 +8,5 @@ updates:
       interval: weekly
     commit-message:
       prefix: 'go.mod: '
+    ignore:
+      - dependency-name: 'k8s.io/*'
