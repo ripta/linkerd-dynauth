@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/linkerd/linkerd2 v0.5.1-0.20230414180104-59a40f58c991
-	github.com/onsi/ginkgo/v2 v2.12.0
+	github.com/onsi/ginkgo/v2 v2.12.1
 	github.com/onsi/gomega v1.27.10
 	k8s.io/api v0.26.4
 	k8s.io/apimachinery v0.26.4
@@ -52,7 +52,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/oauth2 v0.5.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/term v0.11.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
