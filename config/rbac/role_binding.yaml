@@ -5,8 +5,8 @@ metadata:
     app.kubernetes.io/name: clusterrolebinding
     app.kubernetes.io/instance: manager-rolebinding
     app.kubernetes.io/component: rbac
-    app.kubernetes.io/created-by: linkerd-dynauth
-    app.kubernetes.io/part-of: linkerd-dynauth
+    app.kubernetes.io/created-by: linkerd-dynauth2
+    app.kubernetes.io/part-of: linkerd-dynauth2
     app.kubernetes.io/managed-by: kustomize
   name: manager-rolebinding
 roleRef:
