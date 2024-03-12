@@ -18,7 +18,7 @@ function detect_os {
   uname | tr '[:upper:]' '[:lower:]'
 }
 
-version="v1.28.0"
+version="v1.34.1"
 binary=".cache/operator-sdk-${version}"
 
 if [[ ! -f $binary ]]; then
@@ -31,4 +31,6 @@ if [[ ! -f $binary ]]; then
   chmod +x $binary
 fi
 
+PATH=".cache:$PATH"
+export PATH
 exec $binary "$@"

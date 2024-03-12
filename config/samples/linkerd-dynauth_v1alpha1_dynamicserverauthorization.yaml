@@ -1,53 +1,12 @@
-apiVersion: policy.linkerd.io/v1beta1
-kind: Server
-metadata:
-  name: test
-  labels:
-    app.kubernetes.io/name: test
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: test
-  port: http
-  proxyProtocol: HTTP/1
-
----
 apiVersion: linkerd-dynauth.k.r8y.net/v1alpha1
 kind: DynamicServerAuthorization
 metadata:
-  name: test-health
   labels:
-    app.kubernetes.io/name: test
+    app.kubernetes.io/name: dynamicserverauthorization
+    app.kubernetes.io/instance: dynamicserverauthorization-sample
+    app.kubernetes.io/part-of: linkerd-dynauth2
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: linkerd-dynauth2
+  name: dynamicserverauthorization-sample
 spec:
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: test
-  server:
-    name: test
-  client:
-    healthcheck: true
-
----
-apiVersion: linkerd-dynauth.k.r8y.net/v1alpha1
-kind: DynamicServerAuthorization
-metadata:
-  name: test-labels
-  labels:
-    app.kubernetes.io/name: test
-spec:
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: test
-  server:
-    name: test
-  client:
-    meshTLS:
-      serviceAccounts:
-        - name: default
-          namespaceSelector:
-            matchExpressions:
-              - key: group.k.r8y.net/name
-                operator: In
-                values:
-                  - foo
-                  - bar
+  # TODO(user): Add fields here

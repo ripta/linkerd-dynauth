@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package controller
 
 import (
 	"context"
@@ -23,6 +23,7 @@ import (
 	"net"
 	"sort"
 
+	serverauthorizationv1beta1 "github.com/linkerd/linkerd2/controller/gen/apis/serverauthorization/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,9 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	serverauthorizationv1beta1 "github.com/linkerd/linkerd2/controller/gen/apis/serverauthorization/v1beta1"
 
 	linkerddynauthv1alpha1 "github.com/ripta/linkerd-dynauth/api/v1alpha1"
 	"github.com/ripta/linkerd-dynauth/util"
@@ -359,15 +357,11 @@ func (r *DynamicServerAuthorizationReconciler) SetupWithManager(mgr ctrl.Manager
 		For(&linkerddynauthv1alpha1.DynamicServerAuthorization{}).
 		Owns(&serverauthorizationv1beta1.ServerAuthorization{}).
 		Watches(
-			&source.Kind{
-				Type: &corev1.Namespace{},
-			},
+			&corev1.Namespace{},
 			handler.EnqueueRequestsFromMapFunc(r.namespaceToEnqueueRequestMapper),
 		).
 		Watches(
-			&source.Kind{
-				Type: &corev1.Node{},
-			},
+			&corev1.Node{},
 			handler.EnqueueRequestsFromMapFunc(r.nodeToHealthcheckAuthorizationMapper),
 			builder.WithPredicates(&nodeIPFilter{}),
 		).
@@ -388,9 +382,7 @@ func (r *DynamicServerAuthorizationReconciler) nodeToHealthcheckAuthorizationInd
 	return []string{"true"}
 }
 
-func (r *DynamicServerAuthorizationReconciler) nodeToHealthcheckAuthorizationMapper(obj client.Object) []reconcile.Request {
-	ctx := context.TODO()
-
+func (r *DynamicServerAuthorizationReconciler) nodeToHealthcheckAuthorizationMapper(ctx context.Context, obj client.Object) []reconcile.Request {
 	if _, ok := obj.(*corev1.Node); !ok {
 		log.Log.Error(fmt.Errorf("unexpected object type %T, when expecting corev1.Node", obj), "in HealthcheckAuthorizer mapper")
 		return nil
@@ -423,9 +415,7 @@ func (r *DynamicServerAuthorizationReconciler) nodeToHealthcheckAuthorizationMap
 	return reqs
 }
 
-func (r *DynamicServerAuthorizationReconciler) namespaceToEnqueueRequestMapper(obj client.Object) []reconcile.Request {
-	ctx := context.TODO()
-
+func (r *DynamicServerAuthorizationReconciler) namespaceToEnqueueRequestMapper(ctx context.Context, obj client.Object) []reconcile.Request {
 	ns, ok := obj.(*corev1.Namespace)
 	if !ok {
 		log.Log.Error(fmt.Errorf("unexpected object type %T, when expecting corev1.Namespace", obj), "in EnqueueRequest mapper")
