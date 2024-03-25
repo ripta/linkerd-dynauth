@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/linkerd/linkerd2 v0.5.1-0.20230414180104-59a40f58c991
-	github.com/onsi/ginkgo/v2 v2.16.0
+	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
 	k8s.io/api v0.29.0
 	k8s.io/apimachinery v0.29.0
