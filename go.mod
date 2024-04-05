@@ -6,7 +6,6 @@ toolchain go1.22.2
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
-	github.com/linkerd/linkerd2 v0.5.1-0.20240404173821-19daff7a5f48
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
 	k8s.io/api v0.29.3
