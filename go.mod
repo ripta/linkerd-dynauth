@@ -1,7 +1,6 @@
 module github.com/ripta/linkerd-dynauth
 
 go 1.22
-
 toolchain go1.22.2
 
 require (
@@ -9,9 +8,9 @@ require (
 	github.com/linkerd/linkerd2 v0.5.1-0.20240404173821-19daff7a5f48
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
-	k8s.io/api v0.29.3
-	k8s.io/apimachinery v0.29.3
-	k8s.io/client-go v0.29.3
+	k8s.io/api v0.30.0
+	k8s.io/apimachinery v0.30.0
+	k8s.io/client-go v0.30.0
 	sigs.k8s.io/controller-runtime v0.17.3
 )
 
