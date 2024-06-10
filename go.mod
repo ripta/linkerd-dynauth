@@ -1,7 +1,7 @@
 module github.com/ripta/linkerd-dynauth
 
 go 1.22
-toolchain go1.22.2
+toolchain go1.22.3
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
@@ -11,7 +11,7 @@ require (
 	k8s.io/api v0.30.1
 	k8s.io/apimachinery v0.30.1
 	k8s.io/client-go v0.30.1
-	sigs.k8s.io/controller-runtime v0.18.3
+	sigs.k8s.io/controller-runtime v0.18.4
 )
 
 require (
