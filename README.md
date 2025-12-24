@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This repository was archived on 2025-12-24, because the author no longer relies on it. You are always free to fork and improve in accordance to the LICENSE.
+
 # linkerd-dynauth
 
 CRD to allow dynamic namespace selector in server authorizations, somewhat
